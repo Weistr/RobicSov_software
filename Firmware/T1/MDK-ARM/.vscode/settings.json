@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "opicom.h": "c",
+        "cubemotion.h": "c",
+        "zdt_motorcom.h": "c"
+    }
+}
