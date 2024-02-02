@@ -15,9 +15,9 @@ from copy import deepcopy
 from copy import deepcopy
 import heapq
 
-def calculate_crc16(motionResult):  # CRC校验
+def calculate_crc16(pmotionResult):  # CRC校验
     # sarray=发送数组
-    data = motionResult[0]
+    data = pmotionResult[0]
     crc = 0xFFFF
     for char in data:
         crc ^= ord(char)
@@ -29,18 +29,19 @@ def calculate_crc16(motionResult):  # CRC校验
                 crc >>= 1
     # 计算校验值并输出结果
     crc = hex(crc)[2:].zfill(4).upper()
-    motionResult[2] = crc[0]+crc[1]
-    motionResult[1] = crc[2]+crc[3]
-    print("CRC16校验值为:", crc)
-    print(motionResult)
+    pmotionResult[1] += crc[2]+crc[3]
+    pmotionResult[2] += crc[0]+crc[1]
+
+    #print("CRC16校验值为:", crc)
+    #print(motionResult)
 
     array = []
-    for j in range(len(motionResult)):
+    for j in range(len(pmotionResult)):
         if j == 0:
-            for i in range(len(motionResult[j])):
-                array.append(int(hex(ord(motionResult[j][i]))[2:], 16))
+            for i in range(len(pmotionResult[j])):
+                array.append(int(hex(ord(pmotionResult[j][i]))[2:], 16))
         else:
-            array.append(int(motionResult[j], 16))
+            array.append(int(pmotionResult[j], 16))
     return array
 
 
@@ -748,14 +749,14 @@ def colorDec_LR(hs,thes,h):
         return 'n'
     
 def colorDec_Hole3(hs,thes,h):
-    if thes[0] < hs[0] < thes[1] and h < thes[5]:
+    if hs[1] < thes[7] :
+        return 'w'
+    if (thes[0] < hs[0] < thes[1] and h < thes[5]) or (hs[0] < -6):
         return 'r'
     elif thes[0] < hs[0] < thes[1] and h > thes[5]:
         return 'o'
     elif thes[1] < hs[0] < thes[2] and hs[1] > thes[6] :
         return 'y'
-    elif thes[1] < hs[0] < thes[2] and hs[1] < thes[6] :
-        return 'w'
     elif thes[2] < hs[0] < thes[3] :
         return 'g'
     elif thes[3] < hs[0] < thes[4] :
@@ -764,14 +765,14 @@ def colorDec_Hole3(hs,thes,h):
         return 'n'
     
 def colorDec_Hole2(hs,thes,h):
-    if thes[0] <= hs[0] <= thes[1] and h < thes[5]:
-        return 'r'
-    elif thes[0] <= hs[0] <= thes[1] and h > thes[5]:
-        return 'o'
-    elif thes[1] < hs[0] < thes[2] and hs[1] > thes[6] :
-        return 'y'
-    elif thes[1] < hs[0] < thes[2] and hs[1] < thes[6] :
+    if hs[1] < thes[7] :
         return 'w'
+    if (thes[0] < hs[0] < thes[1] and h < thes[5]) or (hs[0] < -6):
+        return 'r'
+    elif thes[0] < hs[0] < thes[1] and h > thes[5]:
+        return 'o'
+    elif thes[1] < hs[0] < thes[2] :
+        return 'y'
     elif thes[2] < hs[0] < thes[3] :
         return 'g'
     elif thes[3] < hs[0] < thes[4] :
@@ -779,21 +780,71 @@ def colorDec_Hole2(hs,thes,h):
     else :
         return 'n'
 
+flag = 0
 while True:
     video_photo0 = cv2.VideoCapture(1) #上
     video_photo1 = cv2.VideoCapture(4) #下
     video_photo2 = cv2.VideoCapture(3) #
     video_photo3 = cv2.VideoCapture(2) #
-    flag = 0
-    # 拍照上###################################################################################
+
+
+    #复位手爪
     if flag==1 :
         flag = 0
-        for i in range(50)
-        if(motionResult[i]=='W'):
-            
         S = input('请拿下魔方，按回车复位手爪')
 
+        rstmotion=[]
+        sta2 = []
+        flag2=0
+        cnt=0
+        for i in range(int(len(motionResult)/3)):
+            if i==0 :
+                sta1 = motionResult[-3:]
+            else:
+                sta1 = motionResult[-3-i*3:-i*3]
+            if(sta1[1]=='W'):
+                cnt += 1
+                sta2 += sta1
+                if(cnt == 2):
+                    break
 
+        print('--last sta---')
+        print(sta2)  
+        if sta2[2]=='0' and sta2[5]=='0':
+            print("无需复位手爪")
+        elif sta2[2]=='0':
+            rstmotion += sta2[3]
+            rstmotion += 'W'
+            rstmotion += '0'
+        elif sta2[5]=='0':
+            rstmotion += sta2[0]
+            rstmotion += 'W'
+            rstmotion += '0'
+        elif (int(sta2[2])%2 != 0) :
+            rstmotion += sta2[0]
+            rstmotion += 'W'
+            rstmotion += '0'
+            rstmotion += sta2[3]
+            rstmotion += 'W'
+            rstmotion += '0'
+        elif (int(sta2[5])%2 != 0) :
+            rstmotion += sta2[3]
+            rstmotion += 'W'
+            rstmotion += '0'
+            rstmotion += sta2[0]
+            rstmotion += 'W'
+            rstmotion += '0'
+        else :
+            rstmotion = 'LW0RW0'
+        rstmotion = ''.join(rstmotion)
+        print('--motion---')
+        print(rstmotion) 
+        rstmotion = calculate_crc16([rstmotion,"",""])
+        ser2.open()
+        #ser2 = serial.Serial('COM16', 115200)
+        ser2.write(rstmotion)  
+        ser2.close()
+   # 拍照上###################################################################################
     S = input('相机已开启，准备识别')
     ret0, frame0 = video_photo0.read()
     cv2.imwrite(str(0) + '.jpg', frame0)
@@ -919,30 +970,30 @@ while True:
                     [-3,3,10,60,90,155,180,75,150],[-3,3,10,60,90,155,180,75,150],[-3,3,10,60,90,155,180,75,150],
 
                     #L面 同
-                    [-7,1,10,60,90,155,180,55,152],[-7,1,10,60,90,155,180,55,152],[-7,1,10,60,90,155,180,55,140],
+                    [-7,1,10,60,90,155,180,55,152],[-7,1,10,60,90,155,180,55,152],[-7,1,10,60,90,155,180,55,130],
                     [-7,1,10,60,90,155,180,55,152],[-7,1,10,60,90,155,180,55,152],[-7,1,10,60,90,155,180,55,152],
                     [-7,1,10,60,90,155,180,55,152],[-7,1,10,60,90,155,180,55,152],[-7,1,10,60,90,155,180,55,152],
 
                     #B面    t同[1,106](o)
-                    [-7,1,10,60,90,155,180,40,152],[-7,1,10,60,90,155,180,55,152],[-7,1,10,60,90,155,180,55,152],
-                    [-7,1,10,60,90,155,180,40,152],[-7,1,10,60,90,155,180,55,152],[-7,1,10,60,90,155,180,55,152],
-                    [-7,1,10,60,90,155,180,40,152],[-7,1,10,60,90,155,180,55,152],[-7,1,10,60,90,155,180,55,152],
+                    [-7,1,10,60,90,155,180,55,152],[-7,1,10,60,90,155,180,55,152],[-7,1,10,60,90,155,180,55,152],
+                    [-7,1,10,60,90,155,180,55,152],[-7,1,10,60,90,155,180,55,152],[-7,1,10,60,90,155,180,55,152],
+                    [-7,1,10,60,90,155,180,55,152],[-7,1,10,60,90,155,180,55,152],[-7,1,10,60,90,155,180,55,152],
 
                     #D面 同
                     [-9,8,57,85,155,155,180,60,125],[-9,8,57,85,155,155,180,60,125],[-9,8,57,85,155,155,180,60,140],
-                    [-9,6,40,90,120,55,90,55,125],[-9,8,57,85,155,155,180,80,125],[-9,8,57,85,155,155,180,90,125],
-                    [-9,8,57,85,155,155,180,90,125],[-9,6,40,90,120,55,90,90,125],[-9,8,57,85,155,155,180,90,125],
+                    [-12,6,57,90,120,55,90,55,125],[-9,8,57,85,155,155,180,80,125],[-9,8,57,85,155,155,180,90,125],
+                    [-9,8,57,85,155,155,180,90,125],[-9,6,57,90,120,55,90,90,125],[-9,8,57,85,155,155,180,90,125],
 
                     #U面 同
-                    [-9,8,57,85,155,155,180,90,125],[-9,3,57,82,120,55,110,55,125],[-9,8,57,85,155,155,180,90,125],
-                    [-9,3,57,82,120,55,110,55,125],[-9,8,57,85,155,155,180,90,125],[-9,8,57,85,155,155,180,90,125],
-                    [-9,8,57,85,155,155,180,90,125],[-9,8,57,85,155,155,180,90,125],[-9,8,57,85,155,155,180,90,125],
+                    [-9,8,57,85,155,155,180,90,125],[-9,8,57,82,120,55,110,110,125],[-9,8,57,85,155,155,180,90,125],
+                    [-12,8,57,87,120,55,110,90,125],[-9,8,57,85,155,155,180,90,125],[-9,8,57,85,155,155,180,90,125],
+                    [-9,8,57,85,155,155,180,90,125],[-9,8,57,85,155,155,180,90,125],[-9,8,57,85,155,155,180,78,125],
 
                     ]
     #球平均值
     for blob in range(54):
         for pix in range(9):
-            if PixelHsvAarry[blob*9+pix][0] > 170 :
+            if PixelHsvAarry[blob*9+pix][0] > 165 :
                 PixelHsvAarry[blob*9+pix][0] -= 180
             cube_color_avr[blob][0] += PixelHsvAarry[blob*9+pix][0]
             cube_color_avr[blob][1] += PixelHsvAarry[blob*9+pix][1]
@@ -1027,12 +1078,12 @@ while True:
     motionResult = motion_optimal_three(motionResult)
     # 优化动作
     print("****************机器人动作****************")
-    motionResult = calculate_crc16(
+    roboSend = calculate_crc16(
         ["RG1" + "LG1" + motion_optimal_three(motionResult) + "RG0" + "LG0", "", ""])
-    #print(motionResult)
-    S = input('开始复原')
+    print(motionResult)
+    #S = input('开始复原')
     ser2 = serial.Serial('COM16', 115200)
-    ser2.write(motionResult)
+    ser2.write(roboSend)
     ser2.close()
     flag = 1
 
