@@ -43,7 +43,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 		uart1RxLen = Size;
 		OpiUartTask();
 	}	
-	if (huart->Instance == USART2)
+	else if (huart->Instance == USART2)
 	{
 		HAL_UARTEx_ReceiveToIdle_DMA(huart, uart2RxBuf, uart2MaxLen);
 		uart2RxLen = Size;

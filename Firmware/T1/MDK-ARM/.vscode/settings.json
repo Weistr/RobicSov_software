@@ -2,6 +2,11 @@
     "files.associations": {
         "opicom.h": "c",
         "cubemotion.h": "c",
-        "zdt_motorcom.h": "c"
+        "zdt_motorcom.h": "c",
+        "motionplanter.h": "c",
+        "crc16modbus.h": "c",
+        "usart.h": "c",
+        "xdrivecom.h": "c",
+        "bsp_led.h": "c"
     }
 }

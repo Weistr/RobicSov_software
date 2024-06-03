@@ -171,8 +171,8 @@ static TASK_COMPONENTS Task_Comps[]=
 {
 //状态  计数  周期  函数
 	{0, 20, 20, basicTask_entry},				/* task 1 Period： 2ms*/
-	{0, 5, 5, serialActionTask},				/* task 2 Period： 100ms 飞控设置*/
-	{0, 5, 5, OpiRcvTask},			/* task 3 Period： 300ms 电池电压*/
+	{0, 5, 5, serialActionTask},				/* task 2 Period： 100ms */
+	{0, 5, 5, OpiRcvTask},			/* task 3 Period： 300ms */
 //	{0, 100, 100, task1},					/* task 4 Period： 500ms */
 //	{0, 100, 100, task2},					/* task 5 Period： 500ms */
 //	{0, 5, 5, task3},					/* task 6 Period： 500ms */

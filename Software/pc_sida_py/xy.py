@@ -12,7 +12,7 @@ def mouseColor(event, x, y, flags, param):
         print('坐标:', [x, y])
 
 
-dst_white = cv2.imread('2.jpg')  # 读进来是BGR格式
+dst_white = cv2.imread('11.jpg')  # 读进来是BGR格式
 hsv = cv2.cvtColor(dst_white, cv2.COLOR_BGR2HSV)  # 变成HSV格式
 cv2.namedWindow("Color Picker")
 cv2.setMouseCallback("Color Picker", mouseColor)

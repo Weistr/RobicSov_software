@@ -4,12 +4,12 @@ import time
 import serial
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.cluster import KMeans
 
-import skimage
-from skimage import draw
-from skimage import morphology
-from skimage import data
+
+#import skimage
+#from skimage import draw
+#from skimage import morphology
+#from skimage import data
 
 from copy import deepcopy
 from copy import deepcopy
@@ -695,13 +695,14 @@ def motion_optimal_one(motionResult):  # 动作优化函数one
     print(motionResult)
     return motionResult
 
-def colorDec_Up(hs,thes,h):
+def colorDec_Up(hs,thes,v):
     if hs[1] < thes[7]:
         return 'w'
-    elif thes[0] <= hs[0] < thes[2] and h<thes[8]:
-        return 'r'
-    elif thes[0] < hs[0] < thes[2] and h>thes[8]:
-        return 'o'
+    elif thes[0] <= hs[0] < thes[2]:
+        if hs[1] < thes[8]:
+            return 'o'
+        else :
+            return 'r'
     elif thes[2] < hs[0] < thes[3] :
         return 'y'
     elif thes[3] < hs[0] < thes[4]:
@@ -712,24 +713,27 @@ def colorDec_Up(hs,thes,h):
         return 'r'
     else :
         return 'n'
-    
-def colorDec_Down(hs,thes,h):
-    if hs[1] < thes[7]:
-        return 'w'
-    elif thes[0] <= hs[0] <= thes[2] and h<thes[8]:
-        return 'r'
-    elif thes[0] <= hs[0] < thes[2] and h>thes[8]:
-        return 'o'
-    elif thes[2] < hs[0] < thes[3]:
-        return 'y'
-    elif thes[3] < hs[0] < thes[4]:
+
+
+
+def colorDec_Down(hs,thes,v):
+    if (hs[0] < thes[0]):
+        if(v < thes[3]):
+            return 'r'
+        else :
+            return 'o'
+
+    elif (hs[0] < thes[1]):
+        if(hs[1] < thes[4]):
+            return 'w'
+        else :
+            return 'y'
+
+    elif (hs[0] < thes[2]):
         return 'g'
-    elif thes[4] < hs[0] < thes[5]:
-        return 'b'
-    elif thes[5] < hs[0] < thes[6]:
-        return 'r'
     else :
-        return 'n'
+        return 'b'
+
     
 
 def colorDec_LR(hs,thes,h):
@@ -748,24 +752,31 @@ def colorDec_LR(hs,thes,h):
     else :
         return 'n'
     
-def colorDec_Hole3(hs,thes,h):
-    if hs[1] < thes[7] :
-        return 'w'
-    if (thes[0] < hs[0] < thes[1] and h < thes[5]) or (hs[0] < -6):
-        return 'r'
-    elif thes[0] < hs[0] < thes[1] and h > thes[5]:
-        return 'o'
-    elif thes[1] < hs[0] < thes[2] and hs[1] > thes[6] :
-        return 'y'
-    elif thes[2] < hs[0] < thes[3] :
-        return 'g'
-    elif thes[3] < hs[0] < thes[4] :
-        return 'b'
+def colorDec_Hole3(hs,thes,v):
+
+    if (hs[0] < thes[0]):
+        if(v < thes[3]):
+            return 'r'
+        else :
+            return 'o'
+
+    elif (hs[0] < thes[1]):
+        if(hs[1] < thes[4]):
+            return 'w'
+        else :
+            return 'y'
+
+    elif (hs[0] < thes[2]):
+        if(hs[1] < thes[5]):
+            return 'b'
+        else :
+            return 'g'
+
     else :
         return 'n'
     
 def colorDec_Hole2(hs,thes,h):
-    if hs[1] < thes[7] :
+    if hs[1] < thes[7]  and hs[0]<50:
         return 'w'
     if (thes[0] < hs[0] < thes[1] and h < thes[5]) or (hs[0] < -6):
         return 'r'
@@ -782,11 +793,23 @@ def colorDec_Hole2(hs,thes,h):
 
 flag = 0
 while True:
-    video_photo0 = cv2.VideoCapture(1) #上
-    video_photo1 = cv2.VideoCapture(4) #下
-    video_photo2 = cv2.VideoCapture(3) #
-    video_photo3 = cv2.VideoCapture(2) #
-
+    print("正在开启相机......")
+    video_photo0 = cv2.VideoCapture(3) #上3
+    video_photo1 = cv2.VideoCapture(1) #下1
+    video_photo2 = cv2.VideoCapture(4) #D
+    video_photo3 = cv2.VideoCapture(0) #U
+    video_photo0.set(cv2.CAP_PROP_AUTO_EXPOSURE,0)
+    video_photo0.set(cv2.CAP_PROP_AUTO_WB,0)
+    video_photo0.set(cv2.CAP_PROP_EXPOSURE,-9)
+    video_photo1.set(cv2.CAP_PROP_AUTO_EXPOSURE,0)
+    video_photo1.set(cv2.CAP_PROP_AUTO_WB,0)
+    video_photo1.set(cv2.CAP_PROP_EXPOSURE,-9)
+    video_photo2.set(cv2.CAP_PROP_AUTO_EXPOSURE,0)
+    video_photo2.set(cv2.CAP_PROP_AUTO_WB,0)
+    video_photo2.set(cv2.CAP_PROP_EXPOSURE,-8)
+    video_photo3.set(cv2.CAP_PROP_AUTO_EXPOSURE,0)
+    video_photo3.set(cv2.CAP_PROP_AUTO_WB,0)
+    video_photo3.set(cv2.CAP_PROP_EXPOSURE,-8)
 
     #复位手爪
     if flag==1 :
@@ -807,7 +830,6 @@ while True:
                 sta2 += sta1
                 if(cnt == 2):
                     break
-
         print('--last sta---')
         print(sta2)  
         if sta2[2]=='0' and sta2[5]=='0':
@@ -816,7 +838,7 @@ while True:
             rstmotion += sta2[3]
             rstmotion += 'W'
             rstmotion += '0'
-        elif sta2[5]=='0':
+        elif sta2[5]=='0' and cnt==2:
             rstmotion += sta2[0]
             rstmotion += 'W'
             rstmotion += '0'
@@ -827,7 +849,7 @@ while True:
             rstmotion += sta2[3]
             rstmotion += 'W'
             rstmotion += '0'
-        elif (int(sta2[5])%2 != 0) :
+        elif (int(sta2[5])%2 != 0)and cnt==2: 
             rstmotion += sta2[3]
             rstmotion += 'W'
             rstmotion += '0'
@@ -881,48 +903,32 @@ while True:
     video_photo3.release()
     # 拍照4###################################################################################
     # 坐标上
-    PixelPosXy_0 = [[206, 117], [255, 113], [329, 104],
-                    [198, 216], [257, 223], [322, 225],
-                    [203, 316], [254, 327], [325, 345],
-                    [412, 100], [485, 114], [549, 120],
-                    [414, 227], [488, 224], [549, 219],
-                    [412, 350], [490, 331], [549, 316]]
+    PixelPosXy_0 = [[204, 106], [270, 97], [351, 88],
+                    [203, 203], [267, 205], [345, 213],
+                    [203, 305], [265, 314], [342, 331],
+                    [439, 97], [501, 106], [555, 122],
+                    [431, 213], [499, 216], [549, 219],
+                    [433, 341], [499, 323], [549, 316]]
     # 坐标下
-    PixelPosXy_1 = [[250, 170], [265, 100], [270, 50],
+    PixelPosXy_1 = [[250, 170], [264, 108], [269, 57],
                     [350, 175], [350, 110], [355, 55],
                     [455, 175], [445, 110], [440, 55],
-                    [255, 360], [255, 310], [250, 245],
+                    [260, 367], [254, 317], [242, 255],
                     [345, 365], [350, 315], [350, 250],
-                    [430, 365], [445, 315], [455, 250]]
+                    [430, 365], [437, 320], [455, 250]]
 
     # 坐标左
-    PixelPosXy_2 = [[135, 215], [225, 120], [315, 60],
-                    [227, 313], [334, 220], [426, 127],
-                    [328, 397], [443, 312], [500, 205],
+    PixelPosXy_2 = [[176, 219], [264, 133], [352, 69],
+                    [254, 316], [348, 216], [434, 134],
+                    [347, 372], [453, 316], [517, 224],
                     ]
     # 坐标右
-    PixelPosXy_3 = [[327, 425], [227, 343], [131, 242], 
-                    [423, 338], [324, 224],  [227, 133], 
-                    [507, 230], [407, 135], [315, 60],
+    PixelPosXy_3 = [[350, 435], [242, 368], [154, 256], 
+                    [450, 361], [349, 243],  [244, 157], 
+                    [538, 234], [439, 139], [310, 80],
                     ]
 
-    for i in range(len(PixelPosXy_0)):
-        cv2.circle(img0, (PixelPosXy_0[i][0],
-                PixelPosXy_0[i][1]), 2, (0, 0, 255), -1)
-    for i in range(len(PixelPosXy_1)):
-        cv2.circle(img1, (PixelPosXy_1[i][0],
-                PixelPosXy_1[i][1]), 2, (0, 0, 255), -1)
-    for i in range(len(PixelPosXy_2)):
-        cv2.circle(img2, (PixelPosXy_2[i][0],
-                PixelPosXy_2[i][1]), 2, (0, 0, 255), -1)
-    for i in range(len(PixelPosXy_3)):
-        cv2.circle(img3, (PixelPosXy_3[i][0],
-                PixelPosXy_3[i][1]), 2, (0, 0, 255), -1)
 
-    cv2.imwrite('00.jpg', img0)
-    cv2.imwrite('11.jpg', img1)
-    cv2.imwrite('22.jpg', img2)
-    cv2.imwrite('33.jpg', img3)
 
     PixelHsvAarry = []
     PixelVAarry = []
@@ -958,38 +964,98 @@ while True:
     #2维数组，54个blob,8个为阈值. 其中前7个为H值区间:红橙黄绿蓝红，8个为S值用于分辨白色,9用于红(为v值)
     #hole3: r,o区间,y,w区间,g区间,b区间,ro_v, yw_s
     #hole2 r,o区间,y,w区间,g区间,b区间,ro_v, yw_s
+
+    # L[2] w->y 80->100
+    # L[2] b->w(s94) 100-> ?  L[8] b->w(s88) 110-> ?
+    # L[2] w(s95) L(8) w(s86)
+    # L[2] b(s120) L[8] b(s102)
     CubeColorThreshold = [
                     #F面
-                    [-5,3,10,60,90,155,180,75,150],[-5,3,10,60,90,155,180,75,150],[-5,3,10,60,90,155,180,75,150],
-                    [-5,3,10,60,90,155,180,75,150],[-5,3,10,60,90,155,180,75,150],[-5,3,10,60,90,155,180,75,150],
-                    [-5,3,10,60,90,155,180,75,150],[-5,3,10,60,90,155,180,75,150],[-5,3,10,60,90,155,180,75,150],
+                    [-5,3,13,60,90,155,180,75,205],[-5,3,13,60,90,155,180,75,205],[-5,3,13,60,90,155,180,75,205],
+                    [-5,3,13,60,90,155,180,75,205],[-5,3,13,60,90,155,180,75,205],[-5,3,13,60,90,155,180,75,205],
+                    [-5,3,13,60,90,155,180,75,205],[-5,3,13,60,90,155,180,75,205],[-5,3,13,60,90,155,180,75,205],
 
                     #R面
-                    [-3,3,10,60,90,155,180,75,150],[-3,3,10,60,90,155,180,75,150],[-3,3,10,60,90,155,180,75,150],
-                    [-3,3,10,60,90,155,180,75,150],[-3,3,10,60,90,155,180,75,150],[-3,3,10,60,90,155,180,75,150],
-                    [-3,3,10,60,90,155,180,75,150],[-3,3,10,60,90,155,180,75,150],[-3,3,10,60,90,155,180,75,150],
+                    [-3,3,13,60,90,155,180,75,205],[-3,3,13,60,90,155,180,75,205],[-3,3,13,60,90,155,180,75,205],
+                    [-3,3,13,60,90,155,180,75,205],[-3,3,13,60,90,155,180,75,205],[-3,3,13,60,90,155,180,75,205],
+                    [-3,3,13,60,90,155,180,75,205],[-3,3,13,60,90,155,180,75,205],[-3,3,13,60,90,155,180,75,205],
 
                     #L面 同
-                    [-7,1,10,60,90,155,180,55,152],[-7,1,10,60,90,155,180,55,152],[-7,1,10,60,90,155,180,55,130],
-                    [-7,1,10,60,90,155,180,55,152],[-7,1,10,60,90,155,180,55,152],[-7,1,10,60,90,155,180,55,152],
-                    [-7,1,10,60,90,155,180,55,152],[-7,1,10,60,90,155,180,55,152],[-7,1,10,60,90,155,180,55,152],
+                    [15,46,78,174,150,0,0,0,0],[15,46,78,174,150,0,0,0,0],[15,46,78,174,150,0,0,0,0],
+                    [15,46,78,174,150,0,0,0,0],[15,46,78,174,150,0,0,0,0],[15,46,78,174,150,0,0,0,0],
+                    [15,46,78,174,150,0,0,0,0],[15,46,78,174,150,0,0,0,0],[15,46,78,174,150,0,0,0,0],
 
-                    #B面    t同[1,106](o)
-                    [-7,1,10,60,90,155,180,55,152],[-7,1,10,60,90,155,180,55,152],[-7,1,10,60,90,155,180,55,152],
-                    [-7,1,10,60,90,155,180,55,152],[-7,1,10,60,90,155,180,55,152],[-7,1,10,60,90,155,180,55,152],
-                    [-7,1,10,60,90,155,180,55,152],[-7,1,10,60,90,155,180,55,152],[-7,1,10,60,90,155,180,55,152],
+                    #B面  
+                    [15,46,78,174,150,0,0,0,0],[15,46,78,174,150,0,0,0,0],[15,46,78,174,150,0,0,0,0],
+                    [15,46,78,174,150,0,0,0,0],[15,46,78,174,150,0,0,0,0],[15,46,78,174,150,0,0,0,0],
+                    [15,46,78,174,150,0,0,0,0],[15,46,78,174,150,0,0,0,0],[15,46,78,174,150,0,0,0,0],
 
-                    #D面 同
-                    [-9,8,57,85,155,155,180,60,125],[-9,8,57,85,155,155,180,60,125],[-9,8,57,85,155,155,180,60,140],
-                    [-12,6,57,90,120,55,90,55,125],[-9,8,57,85,155,155,180,80,125],[-9,8,57,85,155,155,180,90,125],
-                    [-9,8,57,85,155,155,180,90,125],[-9,6,57,90,120,55,90,90,125],[-9,8,57,85,155,155,180,90,125],
+                    #D面 
+                    [-9,15,35,85,155,155,180,78,125],[-9,15,57,85,155,155,180,70,125],[-9,15,35,85,155,155,180,60,150],
+                    [-12,15,45,65,120,55,90,190,125],[-9,15,35,85,155,155,180,80,125],[-9,15,35,85,155,155,180,90,125],
+                    [-9,15,35,85,155,155,180,90,125],[-9,15,35,79,120,55,90,190,125],[-9,15,35,85,155,155,180,90,125],
 
-                    #U面 同
-                    [-9,8,57,85,155,155,180,90,125],[-9,8,57,82,120,55,110,110,125],[-9,8,57,85,155,155,180,90,125],
-                    [-12,8,57,87,120,55,110,90,125],[-9,8,57,85,155,155,180,90,125],[-9,8,57,85,155,155,180,90,125],
-                    [-9,8,57,85,155,155,180,90,125],[-9,8,57,85,155,155,180,90,125],[-9,8,57,85,155,155,180,78,125],
-
+                    #U面
+                    [-9,15,57,85,155,155,180,90,125],[15,35,80,125,180,110,0,0,0],[-9,15,57,85,155,155,180,90,125],
+                    [15,35,80,125,180,110,0,0,0],[-9,15,57,85,155,155,180,90,125],[-9,15,57,85,155,155,180,90,125],
+                    [-9,15,57,85,155,155,180,90,125],[-9,15,57,85,155,155,180,90,125],[-9,15,57,85,155,155,180,78,145],
                     ]
+
+                    #hole3: [0ro(h) 1yw(h) 2gb[h]  3ro(v) 4yw(s) 5gb(s)]
+                    # y:[24 200 x] [26 216 x]
+                    # w:[23 147 x] [23 162 x]
+                    # g:[47 167 x] [49 188 x]
+                    # b:[51 76 x]  [56 86 x]
+                    # r:[10 187 101] [9 209 88]
+                    # o:[8 209 156]  [8 218 154]
+
+                    #F: []
+                    # y:[38~40 95~107 x]
+                    # w:[109~112 23~31 x]
+                    # g:[71~73 253~255 x]
+                    # b:[107~108 252~255 x]
+                    # r:[-3~-3 237~245 x] 
+                    # o:[0~1 152~139 x]  
+
+                    #R: []
+                    # y:[36~37 111~126 x]
+                    # w:[101~111 12~22 x]
+                    # g:[72~73 254~255 x]
+                    # b:[109~109 253~255 x]
+                    # r:[-2~-2 244~249 x]
+                    # o:[2~3 161~174 x] 
+
+                    #L: [[0ro(h) 1yw(h) 2gb[h]  3ro(v) 4yw(s) ]]
+                    # y:[31~33 201~212 x]
+                    # w:[29~33 61~82 x]
+                    # g:[59~62 197~221 x]
+                    # b:[94~98 184~239 x]
+                    # r:[2~6 197~224 85~149] 
+                    # o:[6~9 203~210 195~230]  
+
+                    #B: []
+                    # y:[31~33 209~218 x]
+                    # w:[28~29 60~100 x]
+                    # g:[60~62 205~234 x]
+                    # b:[95~98 168~250 x]
+                    # r:[2~6 206~232 90~153]
+                    # o:[8~9 203~225 203~236] 
+
+                    #D: [[0ro(h) 1yw(h) 2gb[h]  3ro(v) 4yw(s) ]]
+                    # y:[31~33 201~212 x]
+                    # w:[29~33 61~82 x]
+                    # g:[59~62 197~221 x]
+                    # b:[94~98 184~239 x]
+                    # r:[2~6 197~224 85~149] 
+                    # o:[6~9 203~210 195~230]  
+
+                    #U: []
+                    # y:[31~33 209~218 x]
+                    # w:[28~29 60~100 x]
+                    # g:[60~62 205~234 x]
+                    # b:[95~98 168~250 x]
+                    # r:[2~6 206~232 90~153]
+                    # o:[8~9 203~225 203~236] 
     #球平均值
     for blob in range(54):
         for pix in range(9):
@@ -1060,15 +1126,73 @@ while True:
     kociembaInput = ''.join(cubeBlobeKociemba)
     print("**************cubecolor**************")
     print(cubeBlobeColor)
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    j=0
+    for i in range(len(PixelPosXy_0)):
+        cv2.putText(img0,cubeBlobeColor[j]+str(i), (PixelPosXy_0[i][0],
+                PixelPosXy_0[i][1]),font,0.7, (0, 255, 0), 1)
+        j+=1
+    for i in range(len(PixelPosXy_1)):
+        cv2.putText(img1,cubeBlobeColor[j]+str(i), (PixelPosXy_1[i][0],
+                PixelPosXy_1[i][1]),font,0.7, (0, 255, 0), 1)
+        j+=1
+    for i in range(len(PixelPosXy_2)):
+        cv2.putText(img2,cubeBlobeColor[j]+str(i), (PixelPosXy_2[i][0],
+                PixelPosXy_2[i][1]),font,0.7, (0, 255, 0), 1)
+        j+=1
+    for i in range(len(PixelPosXy_3)):
+        cv2.putText(img3,cubeBlobeColor[j]+str(i), (PixelPosXy_3[i][0],
+                PixelPosXy_3[i][1]),font,0.7, (0, 255, 0), 1)
+        j+=1        
+        
+    for i in range(len(PixelPosXy_0)):
+        cv2.circle(img0, (PixelPosXy_0[i][0],
+                PixelPosXy_0[i][1]), 2, (0, 0, 255), -1)
+    for i in range(len(PixelPosXy_1)):
+        cv2.circle(img1, (PixelPosXy_1[i][0],
+                PixelPosXy_1[i][1]), 2, (0, 0, 255), -1)
+    for i in range(len(PixelPosXy_2)):
+        cv2.circle(img2, (PixelPosXy_2[i][0],
+                PixelPosXy_2[i][1]), 2, (0, 0, 255), -1)
+    for i in range(len(PixelPosXy_3)):
+        cv2.circle(img3, (PixelPosXy_3[i][0],
+                PixelPosXy_3[i][1]), 2, (0, 0, 255), -1)
 
+    cv2.imwrite('00.jpg', img0)
+    cv2.imwrite('11.jpg', img1)
+    cv2.imwrite('22.jpg', img2)
+    cv2.imwrite('33.jpg', img3)
     print("**************cubeKociemba**************")
     print(kociembaInput)
     print("**************center**************")
     print(cubeCenterBlobeColor)
     print("**************raw**************")
-    print(cube_color_avr)
+    print("**F**")
+    print(cube_color_avr[0:9])
+    print("**R**")
+    print(cube_color_avr[9:18])
+    print("**L**")
+    print(cube_color_avr[18:27])
+    print("**B**")
+    print(cube_color_avr[27:36])
+    print("**D**")
+    print(cube_color_avr[36:45])
+    print("**U**")
+    print(cube_color_avr[45:54])
     print("**************v**************")
-    print(cube_v_avr)
+    print("**F**")
+    print(cube_v_avr[0:9])
+    print("**R**")
+    print(cube_v_avr[9:18])
+    print("**L**")
+    print(cube_v_avr[18:27])
+    print("**B**")
+    print(cube_v_avr[27:36])
+    print("**D**")
+    print(cube_v_avr[36:45])
+    print("**U**")
+    print(cube_v_avr[45:54])
+
     motionResult = kociemba.solve(kociembaInput)
     print("**************Kociemba动作**************")
     print(motionResult)
