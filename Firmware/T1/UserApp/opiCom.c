@@ -34,17 +34,12 @@ void OpiRcvTask()
 		__nop();
 		packTimeOutCnt++;
 	}
-
 	else if(OpiUartRcvFlag == 1)
 	{
-
-
 		OpiUartRcvFlag = 0;
 		packLenPrevious = packLen;
 		packLen = packStrCnt;
 		packStrCnt = 0;
-		
-		
 		/**如果首字符为0-4则为透传模式*/
 		if(actionSerialStr[0] < 4)
 		{
@@ -54,12 +49,7 @@ void OpiRcvTask()
 			originMod = 1;
 			goto ENDLINE;
 		}	
-
-
-
-		
 		/*CRC校验*/
-		
 		crcCal = crc16Cal((uint8_t *)&actionSerialStr[0], packLen-2); // 校验CRC
 		crcRcv = (actionSerialStr[packLen-2] << 8) + actionSerialStr[packLen-1];
 		if (crcCal != crcRcv)
@@ -68,7 +58,6 @@ void OpiRcvTask()
 			uartTrigSendStr();
 			goto ENDLINE;
 		}
-
 		else if(memcmp(actionSerialStr,"backRcv",7)==0)
 		{
 			uartWiteDataToBuffer((uint8_t*)"\r\nrcvLen:",9);
@@ -82,10 +71,9 @@ void OpiRcvTask()
 			sbuf[1] = cubeStrStepCord%100/10+'0';
 			sbuf[2] = cubeStrStepCord%100%10+'0';
 			uartWiteDataToBuffer((uint8_t*)sbuf,3);	
-			uartTrigSendStr();			
+			
+			uartWiteDataToBuffer((uint8_t*)"\r\nraw:",6);	
 		}
-		
-		
 		/**动作串模式*/
 		else if(
 			((packLen >= 5) && ((packLen-2)%3 == 0)) &&

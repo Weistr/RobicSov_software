@@ -15,7 +15,7 @@ void uartPrintString(UART_HandleTypeDef *huart, char* str);
 void uartWiteDataToBuffer(uint8_t* datain, uint8_t len);
 void uartTrigSend(void);
 void uartTrigSendStr(void);
-#define uart1MaxLen 600
+#define uart1MaxLen 1024
 #define uart1TxMaxLen 128
 #define uart2MaxLen 64
 #endif

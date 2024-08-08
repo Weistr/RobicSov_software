@@ -39,8 +39,8 @@ roboWristTypedef roboWrist[2] =
 roboGripperTypedef roboGripper[2] =
     {
         // djid  rstPos  g_openPos  g_closeCurrent      status
-        {  1,    23553,  34220,      -2000,               defaultSta,  0,  0}, // Lg
-        {  4,    26997,  37828,     -2000,               defaultSta,  0,  0} // Rg
+        {  1,    23553,  34220,      -3000,               defaultSta,  0,  0}, // Lg
+        {  4,    26997,  37828,     -3000,               defaultSta,  0,  0} // Rg
 };	
 #define minicurrent  800
 
